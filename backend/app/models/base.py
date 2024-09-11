@@ -1,13 +1,12 @@
-from decimal import Decimal
 from datetime import datetime
-
+from uuid import uuid4
 
 from typing import Annotated
 from uuid import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import func
 
-type uuidpk = Annotated[UUID, mapped_column(primary_key=True)]
+type uuidpk = Annotated[UUID, mapped_column(primary_key=True, default=uuid4)]
 
 
 class Base(DeclarativeBase):
@@ -15,11 +14,3 @@ class Base(DeclarativeBase):
     updated_at: Mapped[datetime] = mapped_column(
         server_default=func.now(), onupdate=func.now()
     )
-
-
-class User(Base):
-    __tablename__ = "user"
-
-    id: Mapped[uuidpk]
-    email: Mapped[str]
-    hashed_password: Mapped[str]

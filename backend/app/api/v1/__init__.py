@@ -1,5 +1,5 @@
 from fastapi.routing import APIRouter
-from . import currencies
+from . import currencies, users
 
-router = APIRouter(prefix='/v1')
-router.include_router(currencies.router)
+router = APIRouter(prefix="/v1")
+router.include_router(users.router)

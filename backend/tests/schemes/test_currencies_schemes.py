@@ -1,6 +1,6 @@
 import pytest
 from decimal import Decimal
-from app.schemes import Currency, Currencies
+from app.schemes.currency import Currency, Currencies
 
 
 @pytest.mark.parametrize("code", ["USD", "usD", "JUSD"])
