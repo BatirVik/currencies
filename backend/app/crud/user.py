@@ -26,3 +26,13 @@ async def create(db: AsyncSession, user_scheme: UserCreate) -> User | None:
 async def read_by_email(db: AsyncSession, user_email: str) -> User | None:
     stmt = sql.select(User).where(User.email == user_email)
     return await db.scalar(stmt)
+
+
+async def read(db: AsyncSession, user_id: UUID) -> User | None:
+    return await db.get(User, user_id)
+
+
+async def read_one_by_email(db: AsyncSession, user_email: str) -> User:
+    stmt = sql.select(User).where(User.email == user_email)
+    res = await db.execute(stmt)
+    return res.scalar_one()

@@ -37,29 +37,6 @@ def create_access_token(payload: dict[str, Any], expires_delta: timedelta) -> st
     return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
 
-async def get_current_user(
-    db: AsyncSession, token: Annotated[str, Depends(oauth2_scheme)]
-) -> User:
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-
-        token_data = TokenData(username=username)
-    except InvalidTokenError:
-        raise credentials_exception
-    user = await crud.user.read_by_email(db, token_data.email)
-    if user is None:
-        raise credentials_exception
-    return user
-
-
 class GetCurrentUser:
     def __init__(self, **criteria) -> None:
         self.criteria = criteria
@@ -93,5 +70,8 @@ class GetCurrentUser:
         return user
 
 
-UserDepends = Annotated[User, Depends(GetCurrentUser())]
-AdminDepends = Annotated[User, Depends(GetCurrentUser(is_admin=True))]
+user_depends = Depends(GetCurrentUser())
+admin_depends = Depends(GetCurrentUser(is_admin=True))
+
+UserDepends = Annotated[User, user_depends]
+AdminDepends = Annotated[User, admin_depends]

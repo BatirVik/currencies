@@ -1,11 +1,10 @@
-from typing import NamedTuple
-
 from faker import Faker
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from starlette.testclient import TestClient
 
-from app.models.user import User
-from app.auth import hash_password
+from app.schemes.user import UserCreate
+
+from app import crud
 
 
 def auth_client(client: TestClient, email: str, password: str):
@@ -16,14 +15,11 @@ def auth_client(client: TestClient, email: str, password: str):
     client.headers["Authorization"] = f"Bearer {token}"
 
 
-class LoginData(NamedTuple):
-    email: str
-    password: str
-
-
-async def generate_login_data(db: AsyncSession, **kwargs) -> LoginData:
-    email = Faker().email()
-    password = "BestPasswordEver!123#"
-    db.add(User(email=email, hashed_password=hash_password(password), **kwargs))
-    await db.commit()
-    return LoginData(email, password)
+async def generate_user(db: AsyncSession, **kwargs) -> UserCreate:
+    user_scheme = UserCreate(
+        email=Faker().email(),
+        password="BestPasswordEver!123#",
+        **kwargs,
+    )
+    await crud.user.create(db, user_scheme)
+    return user_scheme
