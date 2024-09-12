@@ -21,3 +21,8 @@ async def create(db: AsyncSession, user_scheme: UserCreate) -> User | None:
         await db.rollback()
         return
     return user
+
+
+async def read_by_email(db: AsyncSession, user_email: str) -> User | None:
+    stmt = sql.select(User).where(User.email == user_email)
+    return await db.scalar(stmt)
