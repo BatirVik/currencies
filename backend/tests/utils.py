@@ -17,9 +17,13 @@ def auth_client(client: TestClient, email: str, password: str):
 
 async def generate_user(db: AsyncSession, **kwargs) -> UserCreate:
     user_scheme = UserCreate(
-        email=Faker().email(),
+        email=generate_email(),
         password="BestPasswordEver!123#",
         **kwargs,
     )
     await crud.user.create(db, user_scheme)
     return user_scheme
+
+
+def generate_email() -> str:
+    return Faker().email()
