@@ -8,17 +8,16 @@ from app.models.currency import Currency
 
 
 @pytest.mark.asyncio
-async def test_add_currencies(db: AsyncSession, client: TestClient):
+async def test_update_currencies(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db, is_admin=True)
     auth_client(client, user_data.email, user_data.password)
 
-    await create_currencies(db, USD=1)
-    resp = client.post(
+    await create_currencies(db, USD=1, EUR=1.12)
+    resp = client.patch(
         "/v1/currencies",
         json={
             "currencies": [
                 {"code": "EUR", "equals_usd": 1.14},
-                {"code": "HRK", "equals_usd": 0.14},
             ],
         },
     )
@@ -26,15 +25,15 @@ async def test_add_currencies(db: AsyncSession, client: TestClient):
 
     res = await db.execute(select(Currency.code, Currency.equals_usd))
     db_currs = {code: float(value) for code, value in res}
-    assert db_currs == {"EUR": 1.14, "USD": 1, "HRK": 0.14}
+    assert db_currs == {"EUR": 1.14, "USD": 1}
 
 
 @pytest.mark.asyncio
-async def test_not_admin_add_currencies(db: AsyncSession, client: TestClient):
+async def test_not_admin_update_currencies(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db)
     auth_client(client, user_data.email, user_data.password)
 
-    await create_currencies(db, USD=1)
+    await create_currencies(db, USD=1, EUR=1.12, HRK=0.12)
     resp = client.post(
         "/v1/currencies",
         json={
@@ -48,11 +47,11 @@ async def test_not_admin_add_currencies(db: AsyncSession, client: TestClient):
 
     res = await db.execute(select(Currency.code, Currency.equals_usd))
     db_currs = {code: float(value) for code, value in res}
-    assert db_currs == {"USD": 1}
+    assert db_currs == {"USD": 1, "EUR": 1.12, "HRK": 0.12}
 
 
 @pytest.mark.asyncio
-async def test_add_currencies_conflict(db: AsyncSession, client: TestClient):
+async def test_update_currencies_not_found(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db, is_admin=True)
     auth_client(client, user_data.email, user_data.password)
 
@@ -75,4 +74,4 @@ async def test_add_currencies_conflict(db: AsyncSession, client: TestClient):
 
     res = await db.execute(select(Currency.code, Currency.equals_usd))
     db_currs = {code: float(value) for code, value in res}
-    assert db_currs == {"EUR": 1.12, "USD": 1}
+    assert db_currs == {"USD": 1, "EUR": 1.12}

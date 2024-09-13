@@ -1,5 +1,3 @@
-from collections.abc import Sequence
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy.dialects.postgresql as postgresql
@@ -7,7 +5,7 @@ from sqlalchemy import sql
 
 
 from app.models.currency import Currency
-from app.schemes.currency import CurrenciesCreate, CurrencyScheme
+from app.schemes.currency import CurrenciesCreate, CurrenciesUpdate
 
 
 # async def _create_many_update(
@@ -47,5 +45,22 @@ async def create_many(
     return []
 
 
-# def update_many(db: AsyncSession, currencies_scheme: CurrenciesCreate):
-#     """Returns existed codes"""
+async def update_many(
+    db: AsyncSession, currencies_scheme: CurrenciesUpdate
+) -> list[str]:
+    """Returns not existed codes"""
+    codes = {curr.code for curr in currencies_scheme.currencies}
+    stmt = sql.select(Currency.code).where(Currency.code.in_(codes)).with_for_update()
+    existed_codes = set(await db.scalars(stmt))
+    if len(existed_codes) != len(codes):
+        return list(codes.difference(existed_codes))
+
+    for curr in currencies_scheme.currencies:
+        stmt = (
+            sql.update(Currency)
+            .where(Currency.code == curr.code)
+            .values(equals_usd=curr.equals_usd)
+        )
+        await db.execute(stmt)
+    await db.commit()
+    return []

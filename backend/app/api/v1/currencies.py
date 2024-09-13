@@ -2,7 +2,7 @@ from fastapi import HTTPException, APIRouter
 
 from app.auth import admin_depends
 from app.db import SessionDepends
-from app.schemes.currency import CurrenciesCreate
+from app.schemes.currency import CurrenciesCreate, CurrenciesUpdate
 from app import crud
 
 router = APIRouter(prefix="/currencies", tags=["currencies"])
@@ -14,4 +14,16 @@ async def add_currencies(db: SessionDepends, currs_scheme: CurrenciesCreate) -> 
         raise HTTPException(
             409,
             {"msg": "Some currencies already exists", "existed_codes": existed_codes},
+        )
+
+
+@router.patch("/", dependencies=[admin_depends], status_code=204)
+async def update_currencies(db: SessionDepends, currs_scheme: CurrenciesUpdate) -> None:
+    if not_existed_codes := await crud.currency.update_many(db, currs_scheme):
+        raise HTTPException(
+            404,
+            {
+                "msg": "Some currencies are not found",
+                "not_existed_codes": not_existed_codes,
+            },
         )
