@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing_extensions import Literal
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -25,18 +24,13 @@ class Currencies(BaseModel):
         return currs
 
 
-class CurrenciesCodes(BaseModel):
-    existed_codes: set[str]
-    affected_codes: set[str]
-
-
 class CurrenciesRead(Currencies):
     pass
 
 
 class CurrenciesUpdate(Currencies):
-    on_absence: Literal["create", "skip", "abort"]
+    pass
 
 
 class CurrenciesCreate(Currencies):
-    on_presence: Literal["update", "skip", "abort"]
+    pass
