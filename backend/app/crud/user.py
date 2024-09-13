@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import sql
 from sqlalchemy.exc import IntegrityError
 
-from app.schemes.user import UserCreate, UserUpdate
+from app.schemes.user import UserCreate, UserResetPassword, UserUpdate
 from app.models.user import User
-from app.auth import hash_password
+from app.auth import authenticate_user, hash_password, verify_password
 
 
 async def create(db: AsyncSession, user_scheme: UserCreate) -> User | None:
@@ -66,3 +66,19 @@ async def read_one_by_email(db: AsyncSession, user_email: str) -> User:
     stmt = sql.select(User).where(User.email == user_email)
     res = await db.execute(stmt)
     return res.scalar_one()
+
+
+async def reset_password(
+    db: AsyncSession,
+    user: User,
+    reset_scheme: UserResetPassword,
+    *,
+    authentication_failed: Exception | None = None,
+) -> bool:
+    if not verify_password(reset_scheme.old_password, user.hashed_password):
+        if authentication_failed is None:
+            return False
+        raise authentication_failed
+    user.hashed_password = hash_password(reset_scheme.new_password)
+    await db.commit()
+    return True

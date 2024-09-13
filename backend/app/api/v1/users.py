@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from fastapi.routing import APIRouter
 
 from app.db import SessionDepends
-from app.schemes.user import UserCreate, UserRead, UserUpdate
+from app.schemes.user import UserCreate, UserRead, UserResetPassword, UserUpdate
 from app.models.user import User
 from app import crud
 from app.auth import admin_depends, UserDepends
@@ -47,3 +47,15 @@ async def update_user_by_id(
     if user := await crud.user.update(db, user_id, user_scheme, on_coflict):
         return user
     raise HTTPException(404, "User not found")
+
+
+@router.patch("/me/reset-password", status_code=204)
+async def reset_password(
+    db: SessionDepends, reset_scheme: UserResetPassword, user: UserDepends
+) -> None:
+    await crud.user.reset_password(
+        db,
+        user,
+        reset_scheme,
+        authentication_failed=HTTPException(400, "Authentication failed"),
+    )
