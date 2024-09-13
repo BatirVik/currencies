@@ -1,1 +1,1 @@
-from . import user  # noqa: F401
+from . import user, currency  # noqa: F401

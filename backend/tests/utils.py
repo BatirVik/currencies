@@ -5,6 +5,7 @@ from starlette.testclient import TestClient
 from app.schemes.user import UserCreate
 
 from app import crud
+from app.models.currency import Currency
 
 
 def auth_client(client: TestClient, email: str, password: str):
@@ -27,3 +28,14 @@ async def generate_user(db: AsyncSession, **kwargs) -> UserCreate:
 
 def generate_email() -> str:
     return Faker().email()
+
+
+async def create_currencies(db: AsyncSession, **kwargs: float) -> list[Currency]:
+    currs = []
+    for code, equals_usd in kwargs.items():
+        if len(code) != 3:
+            ValueError("All kwargs keys must have lenght 3")
+        currs.append(Currency(code=code, equals_usd=equals_usd))
+    db.add_all(currs)
+    await db.commit()
+    return currs

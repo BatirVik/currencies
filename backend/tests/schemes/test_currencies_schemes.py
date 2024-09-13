@@ -1,17 +1,17 @@
 import pytest
 from decimal import Decimal
-from app.schemes.currency import Currency, Currencies
+from app.schemes.currency import Currencies, CurrencyScheme
 
 
 @pytest.mark.parametrize("code", ["USD", "usD", "JUSD"])
 def test_currency_code_validation(code: str):
     if len(code) == 3:
-        curr = Currency(code=code, equals_usd=Decimal(1))
+        curr = CurrencyScheme(code=code, equals_usd=Decimal(1))
         assert curr.code == code.upper()
         return
 
     with pytest.raises(ValueError):
-        Currency(code=code, equals_usd=Decimal(1))
+        CurrencyScheme(code=code, equals_usd=Decimal(1))
 
 
 @pytest.mark.parametrize(
@@ -22,7 +22,7 @@ def test_currency_code_validation(code: str):
     ],
 )
 def test_duplicate_currencies(codes: list[str]):
-    currs_data = [Currency(code=code, equals_usd=Decimal(1)) for code in codes]
+    currs_data = [CurrencyScheme(code=code, equals_usd=Decimal(1)) for code in codes]
     if len(set(codes)) == len(codes):
         Currencies(currencies=currs_data)
         return
