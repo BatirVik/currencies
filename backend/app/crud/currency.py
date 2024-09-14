@@ -1,59 +1,49 @@
+from typing import NamedTuple
+from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import sql
 
-
 from app.models.currency import Currency
-from app.schemes.currency import CurrenciesCreate, CurrenciesUpdate
+from app.schemes.currency import CurrenciesCreate, CurrenciesUpdate, CurrenciesUpsert
 
 
-# async def _create_many_update(
-#     db: AsyncSession, currency_schemes: Sequence[CurrencyScheme]
-# ) -> tuple[set[str], set[str]]:
-#     codes = {curr.code for curr in currency_schemes}
-#     curr_values = [curr.model_dump() for curr in currency_schemes]
-
-#     stmt = sql.select(Currency.code).where(Currency.code.in_(codes)).with_for_update()
-#     existed_codes = set(await db.scalars(stmt))
-
-#     stmt = postgresql.insert(Currency).values(curr_values)
-#     stmt = stmt.on_conflict_do_update(
-#         index_elements=["code"], set_={"equals_usd": stmt.excluded.equals_usd}
-#     )
-#     await db.execute(stmt)
-
-#     await db.commit()
-#     return existed_codes, codes
+class CreateManyResult(NamedTuple):
+    existed_codes: list[str]
+    created_codes: list[str]
 
 
 async def create_many(
     db: AsyncSession, currencies_scheme: CurrenciesCreate
-) -> list[str]:
-    """Returns existed codes"""
+) -> CreateManyResult:
     codes = (curr.code for curr in currencies_scheme.currencies)
     curr_values = [curr.model_dump() for curr in currencies_scheme.currencies]
-    stmt = postgresql.insert(Currency).values(curr_values)
+    stmt = postgresql.insert(Currency).values(curr_values).returning(Currency.code)
     try:
-        await db.execute(stmt)
+        created_codes = list(await db.scalars(stmt))
     except IntegrityError:
         await db.rollback()
         stmt = sql.select(Currency.code).where(Currency.code.in_(codes))
         exist_codes = list(await db.scalars(stmt))
-        return exist_codes
+        return CreateManyResult(exist_codes, [])
     await db.commit()
-    return []
+    return CreateManyResult([], created_codes)
+
+
+class UpdateManyResult(NamedTuple):
+    not_existed_codes: list[str]
+    updated_codes: list[str]
 
 
 async def update_many(
     db: AsyncSession, currencies_scheme: CurrenciesUpdate
-) -> list[str]:
-    """Returns not existed codes"""
+) -> UpdateManyResult:
     codes = {curr.code for curr in currencies_scheme.currencies}
     stmt = sql.select(Currency.code).where(Currency.code.in_(codes)).with_for_update()
     existed_codes = set(await db.scalars(stmt))
     if len(existed_codes) != len(codes):
-        return list(codes.difference(existed_codes))
+        return UpdateManyResult(list(codes.difference(existed_codes)), [])
 
     for curr in currencies_scheme.currencies:
         stmt = (
@@ -63,4 +53,10 @@ async def update_many(
         )
         await db.execute(stmt)
     await db.commit()
-    return []
+    return UpdateManyResult([], list(codes))
+
+
+# async def update_many()
+#     db: AsyncSession, currencies_scheme: CurrenciesUpsert
+# ) -> UpdateManyResult:
+#     """Returns (created_codes, updated_codes)"""

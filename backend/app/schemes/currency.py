@@ -34,3 +34,20 @@ class CurrenciesUpdate(Currencies):
 
 class CurrenciesCreate(Currencies):
     pass
+
+
+class CurrenciesUpsert(Currencies):
+    pass
+
+
+class CurrenciesUpsertResp(BaseModel):
+    updated_codes: list[str]
+    created_codes: list[str]
+
+
+class CurrenciesUpdateResp(BaseModel):
+    updated_codes: list[str]
+
+
+class CurrenciesCreateResp(BaseModel):
+    created_codes: list[str]

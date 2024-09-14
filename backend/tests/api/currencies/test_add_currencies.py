@@ -22,7 +22,10 @@ async def test_add_currencies(db: AsyncSession, client: TestClient):
             ],
         },
     )
-    assert resp.status_code == 204
+    assert resp.status_code == 201
+    resp_data = resp.json()
+    assert resp_data.keys() == {"created_codes"}
+    assert set(resp_data["created_codes"]) == {"EUR", "HRK"}
 
     res = await db.execute(select(Currency.code, Currency.equals_usd))
     db_currs = {code: float(value) for code, value in res}
