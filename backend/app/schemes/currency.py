@@ -55,3 +55,7 @@ class CurrenciesUpdateResp(BaseModel):
 
 class CurrenciesCreateResp(BaseModel):
     created_codes: list[str]
+
+
+class CurrencyCodesRead(BaseModel):
+    codes: list[str]

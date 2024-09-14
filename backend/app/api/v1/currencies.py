@@ -10,12 +10,19 @@ from app.schemes.currency import (
     CurrenciesUpdateResp,
     CurrenciesUpsertResp,
     CurrenciesCreateResp,
+    CurrencyCodesRead,
     CurrencyRead,
 )
 from app import crud
 from app.models.currency import Currency
 
 router = APIRouter(prefix="/currencies", tags=["currencies"])
+
+
+@router.get("/codes")
+async def get_available_currency_codes(db: SessionDepends) -> CurrencyCodesRead:
+    codes = await crud.currency.read_all_codes(db)
+    return CurrencyCodesRead(codes=codes)
 
 
 @router.get("/{code}", response_model=CurrencyRead)
