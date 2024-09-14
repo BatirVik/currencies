@@ -5,6 +5,7 @@ from app.auth import admin_depends
 from app.db import SessionDepends
 from app.schemes.currency import (
     CurrenciesCreate,
+    CurrenciesRead,
     CurrenciesUpdate,
     CurrenciesUpsert,
     CurrenciesUpdateResp,
@@ -17,6 +18,12 @@ from app import crud
 from app.models.currency import Currency
 
 router = APIRouter(prefix="/currencies", tags=["currencies"])
+
+
+@router.get("/", response_model=CurrenciesRead)
+async def get_all_currencies(db: SessionDepends) -> dict:
+    currs = await crud.currency.read_all(db)
+    return {"currencies": currs}
 
 
 @router.get("/codes")

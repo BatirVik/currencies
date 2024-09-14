@@ -16,6 +16,10 @@ async def read_all_codes(db: AsyncSession) -> list[str]:
     return list(await db.scalars(sql.select(Currency.code)))
 
 
+async def read_all(db: AsyncSession) -> list[Currency]:
+    return list(await db.scalars(sql.select(Currency)))
+
+
 class CreateManyResult(NamedTuple):
     existed_codes: list[str]
     created_codes: list[str]
