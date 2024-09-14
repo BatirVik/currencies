@@ -1,17 +1,30 @@
-from fastapi import HTTPException, APIRouter
+from typing import Annotated
+from fastapi import HTTPException, APIRouter, Path
 
 from app.auth import admin_depends
 from app.db import SessionDepends
 from app.schemes.currency import (
     CurrenciesCreate,
     CurrenciesUpdate,
+    CurrenciesUpsert,
     CurrenciesUpdateResp,
     CurrenciesUpsertResp,
     CurrenciesCreateResp,
+    CurrencyRead,
 )
 from app import crud
+from app.models.currency import Currency
 
 router = APIRouter(prefix="/currencies", tags=["currencies"])
+
+
+@router.get("/{code}", response_model=CurrencyRead)
+async def get_currency(
+    db: SessionDepends, code: Annotated[str, Path(min_length=3, max_length=3)]
+) -> Currency:
+    if currency := await crud.currency.read(db, code):
+        return currency
+    raise HTTPException(404, "Currency not found")
 
 
 @router.post("/", dependencies=[admin_depends], status_code=201)
@@ -46,12 +59,12 @@ async def update_currencies(
     )
 
 
-# @router.put("/", dependencies=[admin_depends], status_code=200)
-# async def upsert_currencies(
-#     db: SessionDepends, currs_scheme: CurrenciesUpsert
-# ) -> CurrenciesUpsertResp:
-#     res = await crud.currency.upsert_many(db, currs_scheme)
-#     return CurrenciesUpsertResp(
-#         created_codes=res.created_codes,
-#         updated_codes=res.updated_codes,
-#     )
+@router.put("/", dependencies=[admin_depends], status_code=200)
+async def upsert_currencies(
+    db: SessionDepends, currs_scheme: CurrenciesUpsert
+) -> CurrenciesUpsertResp:
+    res = await crud.currency.upsert_many(db, currs_scheme)
+    return CurrenciesUpsertResp(
+        created_codes=res.created_codes,
+        updated_codes=res.updated_codes,
+    )

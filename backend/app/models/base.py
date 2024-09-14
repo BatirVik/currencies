@@ -10,7 +10,7 @@ type uuidpk = Annotated[UUID, mapped_column(primary_key=True, default=uuid4)]
 
 
 class Base(DeclarativeBase):
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        default=func.now(), onupdate=func.now()
     )

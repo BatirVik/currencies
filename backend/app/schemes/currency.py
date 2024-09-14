@@ -11,6 +11,10 @@ class CurrencyScheme(BaseModel):
         return code.upper()
 
 
+class CurrencyRead(CurrencyScheme):
+    pass
+
+
 class Currencies(BaseModel):
     currencies: list[CurrencyScheme]
 
