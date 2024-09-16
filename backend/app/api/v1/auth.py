@@ -1,7 +1,6 @@
 from typing import Annotated
 from datetime import timedelta
 
-
 from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
