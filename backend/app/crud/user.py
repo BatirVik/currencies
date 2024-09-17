@@ -6,13 +6,16 @@ from sqlalchemy.exc import IntegrityError
 
 from app.schemes.user import UserCreate, UserResetPassword, UserUpdate
 from app.models.user import User
-from app.auth import authenticate_user, hash_password, verify_password
+from app.auth import hash_password, verify_password
 
 
-async def create(db: AsyncSession, user_scheme: UserCreate) -> User | None:
+async def create(
+    db: AsyncSession, user_scheme: UserCreate, is_admin: bool = False
+) -> User | None:
     user = User(
         **user_scheme.model_dump(exclude={"password"}),
         hashed_password=hash_password(user_scheme.password),
+        is_admin=is_admin,
     )
     db.add(user)
     try:

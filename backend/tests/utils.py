@@ -16,13 +16,12 @@ def auth_client(client: TestClient, email: str, password: str):
     client.headers["Authorization"] = f"Bearer {token}"
 
 
-async def generate_user(db: AsyncSession, **kwargs) -> UserCreate:
+async def generate_user(db: AsyncSession, is_admin: bool = False) -> UserCreate:
     user_scheme = UserCreate(
         email=generate_email(),
         password="BestPasswordEver!123#",
-        **kwargs,
     )
-    await crud.user.create(db, user_scheme)
+    await crud.user.create(db, user_scheme, is_admin)
     return user_scheme
 
 

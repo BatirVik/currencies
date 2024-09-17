@@ -1,8 +1,10 @@
-FROM python:3.12
-
-RUN pip install poetry
+FROM python:3.12-alpine3.20
 
 WORKDIR /app
+
+RUN apk add --no-cache postgresql-dev
+
+RUN pip install poetry
 
 COPY . .
 

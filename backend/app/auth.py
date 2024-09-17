@@ -37,41 +37,36 @@ def create_access_token(payload: dict[str, Any], expires_delta: timedelta) -> st
     return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
 
 
-class GetCurrentUser:
-    def __init__(self, **criteria) -> None:
-        self.criteria = criteria
-
-    async def __call__(
-        self, db: SessionDepends, token: Annotated[str, Depends(oauth2_scheme)]
-    ) -> User:
-        credentials_exception = HTTPException(
-            status_code=401,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        try:
-            payload = jwt.decode(
-                token, config.SECRET_KEY, algorithms=[config.ALGORITHM]
-            )
-            username: str = payload.get("sub")
-            if username is None:
-                raise credentials_exception
-            token_data = TokenData(username=username)
-        except InvalidTokenError:
+async def get_user(
+    db: SessionDepends, token: Annotated[str, Depends(oauth2_scheme)]
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
             raise credentials_exception
-        user = await crud.user.read_by_email(db, token_data.email)
-        if user is None:
-            raise credentials_exception
+        token_data = TokenData(username=username)
+    except InvalidTokenError:
+        raise credentials_exception
+    user = await crud.user.read_by_email(db, token_data.email)
+    if user is None:
+        raise credentials_exception
+    return user
 
-        for key, value in self.criteria.items():
-            if getattr(user, key) != value:
-                raise HTTPException(403, "Forbidden")
 
+async def get_admin(user: Annotated[User, Depends(get_user)]) -> User:
+    if user.is_admin:
         return user
+    raise HTTPException(403, "Forbidden")
 
 
-user_depends = Depends(GetCurrentUser())
-admin_depends = Depends(GetCurrentUser(is_admin=True))
+user_depends = Depends(get_user)
+admin_depends = Depends(get_admin)
 
 UserDepends = Annotated[User, user_depends]
 AdminDepends = Annotated[User, admin_depends]

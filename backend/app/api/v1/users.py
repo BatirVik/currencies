@@ -7,7 +7,7 @@ from app.db import SessionDepends
 from app.schemes.user import UserCreate, UserRead, UserResetPassword, UserUpdate
 from app.models.user import User
 from app import crud
-from app.auth import admin_depends, UserDepends
+from app.auth import UserDepends, admin_depends
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -16,6 +16,15 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.post("/", status_code=201, response_model=UserRead)
 async def register_user(db: SessionDepends, user_scheme: UserCreate) -> User:
     if user := await crud.user.create(db, user_scheme):
+        return user
+    raise HTTPException(409, "Email is already taken")
+
+
+@router.post(
+    "/admin", status_code=201, response_model=UserRead, dependencies=[admin_depends]
+)
+async def register_admin(db: SessionDepends, user_scheme: UserCreate) -> User:
+    if user := await crud.user.create(db, user_scheme, is_admin=True):
         return user
     raise HTTPException(409, "Email is already taken")
 

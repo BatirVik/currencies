@@ -4,19 +4,23 @@ export default function Card({
   value,
   onValueChange,
   onRemove,
+  availableCodes,
 }) {
   return (
     <div className="d-flex p-1 border gap-1 rounded flex">
       <select
         className="form-select w-auto"
-        onChange={(e) => onCodeChange(e.target.value)}
+        onChange={onCodeChange}
+        defaultValue={code}
       >
-        <option>{code}</option>
+        {availableCodes.map((c) => {
+          return <option key={c}>{c}</option>;
+        })}
       </select>
       <input
         type="number"
         className="form-control"
-        onChange={(e) => onValueChange(e.target.value)}
+        onChange={onValueChange}
         value={value}
       />
       <button className="btn border text-secondary" onClick={onRemove}>
