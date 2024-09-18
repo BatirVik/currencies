@@ -8,7 +8,6 @@ First at all you need to populate ./backend/configuration/.env
 ```env
 DB_URL="postgresql+psycopg://deadpool:x-force@db/app"
 LOGS_PATH="logs/logs.txt"
-
 SECRET_KEY="your-super-secret-key" # openssl rand --hex 32
 ```
 Also, update .env.db at the root of the project
