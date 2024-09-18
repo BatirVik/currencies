@@ -12,5 +12,7 @@ async def test_get_currencies(db: AsyncSession, client: TestClient):
     assert resp.status_code == 200
     resp_data = resp.json()
     assert resp_data.keys() == {"currencies"}
-    currs_data = {curr["code"]: curr["equals_usd"] for curr in resp_data["currencies"]}
-    assert currs_data == {"USD": "1", "EUR": "1.12"}
+    currs_data = {
+        curr["code"]: float(curr["equals_usd"]) for curr in resp_data["currencies"]
+    }
+    assert currs_data == {"USD": 1, "EUR": 1.1200}

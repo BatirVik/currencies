@@ -10,7 +10,7 @@ async def test_get_currency(db: AsyncSession, client: TestClient):
     await create_currencies(db, USD=1, EUR=1.12)
     resp = client.get("/v1/currencies/EUR")
     assert resp.status_code == 200
-    assert resp.json() == {"code": "EUR", "equals_usd": "1.12"}
+    assert resp.json() == {"code": "EUR", "equals_usd": "1.1200"}
 
 
 @pytest.mark.asyncio
