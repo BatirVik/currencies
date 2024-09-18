@@ -4,14 +4,11 @@ from fastapi import HTTPException, APIRouter, Path
 from app.auth import admin_depends
 from app.db import SessionDepends
 from app.schemes.currency import (
-    CurrenciesCreate,
-    CurrenciesRead,
-    CurrenciesUpdate,
-    CurrenciesUpsert,
+    CurrenciesList,
     CurrenciesUpdateResp,
     CurrenciesUpsertResp,
     CurrenciesCreateResp,
-    CurrencyCodesRead,
+    CurrencyCodesList,
     CurrencyRead,
 )
 from app import crud
@@ -20,16 +17,16 @@ from app.models.currency import Currency
 router = APIRouter(prefix="/currencies", tags=["currencies"])
 
 
-@router.get("/", response_model=CurrenciesRead)
+@router.get("/", response_model=CurrenciesList)
 async def get_all_currencies(db: SessionDepends) -> dict:
     currs = await crud.currency.read_all(db)
     return {"currencies": currs}
 
 
 @router.get("/codes")
-async def get_available_currency_codes(db: SessionDepends) -> CurrencyCodesRead:
+async def get_available_currency_codes(db: SessionDepends) -> CurrencyCodesList:
     codes = await crud.currency.read_all_codes(db)
-    return CurrencyCodesRead(codes=codes)
+    return CurrencyCodesList(codes=codes)
 
 
 @router.get("/{code}", response_model=CurrencyRead)
@@ -41,9 +38,18 @@ async def get_currency(
     raise HTTPException(404, "Currency not found")
 
 
+@router.delete("/{code}", status_code=204, dependencies=[admin_depends])
+async def remove_currency(
+    db: SessionDepends, code: Annotated[str, Path(min_length=3, max_length=3)]
+) -> None:
+    if await crud.currency.delete(db, code):
+        return
+    raise HTTPException(404, "Currency not found")
+
+
 @router.post("/", dependencies=[admin_depends], status_code=201)
 async def add_currencies(
-    db: SessionDepends, currs_scheme: CurrenciesCreate
+    db: SessionDepends, currs_scheme: CurrenciesList
 ) -> CurrenciesCreateResp:
     res = await crud.currency.create_many(db, currs_scheme)
     if not res.existed_codes:
@@ -59,7 +65,7 @@ async def add_currencies(
 
 @router.patch("/", dependencies=[admin_depends], status_code=200)
 async def update_currencies(
-    db: SessionDepends, currs_scheme: CurrenciesUpdate
+    db: SessionDepends, currs_scheme: CurrenciesList
 ) -> CurrenciesUpdateResp:
     res = await crud.currency.update_many(db, currs_scheme)
     if not res.not_existed_codes:
@@ -75,7 +81,7 @@ async def update_currencies(
 
 @router.put("/", dependencies=[admin_depends], status_code=200)
 async def upsert_currencies(
-    db: SessionDepends, currs_scheme: CurrenciesUpsert
+    db: SessionDepends, currs_scheme: CurrenciesList
 ) -> CurrenciesUpsertResp:
     res = await crud.currency.upsert_many(db, currs_scheme)
     return CurrenciesUpsertResp(

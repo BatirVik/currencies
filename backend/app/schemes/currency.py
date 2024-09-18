@@ -15,7 +15,7 @@ class CurrencyRead(CurrencyScheme):
     pass
 
 
-class Currencies(BaseModel):
+class CurrenciesList(BaseModel):
     currencies: list[CurrencyScheme]
 
     @field_validator("currencies")
@@ -26,22 +26,6 @@ class Currencies(BaseModel):
                 "Currencies contains code duplicates, which is not allowed"
             )
         return currs
-
-
-class CurrenciesRead(Currencies):
-    pass
-
-
-class CurrenciesUpdate(Currencies):
-    pass
-
-
-class CurrenciesCreate(Currencies):
-    pass
-
-
-class CurrenciesUpsert(Currencies):
-    pass
 
 
 class CurrenciesUpsertResp(BaseModel):
@@ -57,5 +41,5 @@ class CurrenciesCreateResp(BaseModel):
     created_codes: list[str]
 
 
-class CurrencyCodesRead(BaseModel):
+class CurrencyCodesList(BaseModel):
     codes: list[str]

@@ -5,7 +5,7 @@ import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import sql, func
 
 from app.models.currency import Currency
-from app.schemes.currency import CurrenciesCreate, CurrenciesUpdate, CurrenciesUpsert
+from app.schemes.currency import CurrenciesList
 
 
 async def read(db: AsyncSession, code: str) -> Currency | None:
@@ -20,13 +20,20 @@ async def read_all(db: AsyncSession) -> list[Currency]:
     return list(await db.scalars(sql.select(Currency)))
 
 
+async def delete(db: AsyncSession, code: str) -> bool:
+    stmt = sql.delete(Currency).where(Currency.code == code)
+    res = await db.execute(stmt)
+    await db.commit()
+    return res.rowcount == 1
+
+
 class CreateManyResult(NamedTuple):
     existed_codes: list[str]
     created_codes: list[str]
 
 
 async def create_many(
-    db: AsyncSession, currencies_scheme: CurrenciesCreate
+    db: AsyncSession, currencies_scheme: CurrenciesList
 ) -> CreateManyResult:
     codes = (curr.code for curr in currencies_scheme.currencies)
     curr_values = [curr.model_dump() for curr in currencies_scheme.currencies]
@@ -48,7 +55,7 @@ class UpdateManyResult(NamedTuple):
 
 
 async def update_many(
-    db: AsyncSession, currencies_scheme: CurrenciesUpdate
+    db: AsyncSession, currencies_scheme: CurrenciesList
 ) -> UpdateManyResult:
     codes = {curr.code for curr in currencies_scheme.currencies}
     stmt = sql.select(Currency.code).where(Currency.code.in_(codes)).with_for_update()
@@ -73,7 +80,7 @@ class UpsertManyResult(NamedTuple):
 
 
 async def upsert_many(
-    db: AsyncSession, currencies_scheme: CurrenciesUpsert
+    db: AsyncSession, currencies_scheme: CurrenciesList
 ) -> UpsertManyResult:
     curr_values = [curr.model_dump() for curr in currencies_scheme.currencies]
     stmt = postgresql.insert(Currency).values(curr_values)
