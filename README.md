@@ -5,13 +5,13 @@ Full stack project that includes two servers:\
 
 ## Fast Start
 First at all you need to populate ./backend/configuration/.env
-```bash
+```env
 DB_URL="postgresql+psycopg://deadpool:x-force@db/app"
 LOGS_PATH="logs/logs.txt"
 SECRET_KEY="your-super-secret-key"
 ```
 Also, update .env.db at the root of the project
-```bash
+```env
 POSTGRES_USER="deadpool"
 POSTGRES_PASSWORD="x-force"
 POSTGRES_DB="app"
