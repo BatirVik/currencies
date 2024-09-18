@@ -12,6 +12,9 @@ Available values: **production** (.env), **development** (.env.dev), **test** (.
 ### LOGS_PATH
 > Path to the file for writing logs
 
+### SECRET_KEY
+> The minimum length is 32 characters, generate with `openssl rand --hex 32`.
+
 ### ALGORITHM / optional
 > JWT algoritm, by default "HS256"
 ### ACCESS_TOKEN_EXPIRE_MINUTES / optional
