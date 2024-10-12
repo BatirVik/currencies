@@ -1,27 +1,83 @@
 # Currency Converter
-Full stack project that includes two servers:\
-[**Backend**](./backend/README.md) allows you to manipulate currencies in the database\
-[**Frontend**](./frontend/README.md) is single-page app for viewing currency values
+The backend API service for storing and managing currencies, along with a simple one-page frontend that fetches available currencies and implements conversion logic.
 
-## Fast Start
-First at all you need to populate ./backend/configuration/.env
-```env
-DB_URL="postgresql+psycopg://deadpool:x-force@db/app"
-LOGS_PATH="logs/logs.txt"
-SECRET_KEY="your-super-secret-key" # openssl rand --hex 32
-```
-Also, update .env.db at the root of the project
-```env
-POSTGRES_USER="deadpool"
-POSTGRES_PASSWORD="x-force"
-POSTGRES_DB="app"
-```
-Then you can run containers
+## Quick Start
 ```bash
-docker-compose up --build
+MOCK_CURRENCIES=true docker-compose up --build
 ```
-The final step is to insert mock currencies into the database. Go to the backend container, and inside its terminal, run this command:
+API docs: http://localhost:8000/docs \
+Frontend: http://localhost:8000
+
+## Backend
+
+### Environment variables
+
+**ENV**
+> Based on this value, the configuration will load a specific .env file from the configuration folder.\
+Available values: **production** (.env), **development** (.env.dev), **test** (.env.test)
+
+**DB_URL**
+> URL of the database
+
+**LOGS_PATH**
+> Path to the file for writing logs
+
+**SECRET_KEY**
+> The minimum length is 32 characters, generate with `openssl rand --hex 32`.
+
+**ALGORITHM** / optional
+> JWT algorithm, by default "HS256"
+
+**ACCESS_TOKEN_EXPIRE_MINUTES** / optional
+> JWT token lifetime, by default "15"
+
+### Testing
+Run a postgresql docker:
 ```bash
-poetry run manage.py create-mock-currs
+docker run -d -p 5100:5432 -e POSTGRES_DB=test -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test postgres
 ```
-Finally, open the browser and go to http://localhost:8000 (frontend) or http://localhost:8080 (backend)
+Create the configuration/**.env.test** file:
+```env
+DB_URL="postgresql+psycopg://test:test@localhost:5100/test"
+SECRET_KEY= # openssl rand --hex 32
+LOGS_PATH="logs/logs.test.txt"
+```
+Run pytest: (ENV will be overridden to 'test' even if it was exported with a different value)
+```bash
+poetry run pytest
+```
+
+### Migrations
+Activate the virtual environment and define ENV:
+```bash
+poetry shell
+export ENV=development
+```
+Create migration file:
+```bash
+alembic revision --autogenerate -m "message"
+```
+Apply latest migrations:
+```bash
+alembic upgrade head
+```
+
+### Scripts
+Activate the virtual environment and define ENV:
+```bash
+poetry shell
+export ENV=development
+```
+#### Create user
+```bash
+python manage.py create-user "email" "password"
+```
+#### Create admin
+```bash
+python manage.py create-admin "email" "password"
+```
+#### Load mock currencies
+```bash
+python manage.py create-mock-currs
+```
+
