@@ -1,35 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Cards from "./components/Cards.jsx";
+import {useEffect, useState} from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface CurrenciesResponse {
+  currencies: { code: string, equals_usd: string }[],
 }
 
-export default App
+type Currencies = { [key: string]: number };
+
+export default function App() {
+  const [currencies, setCurrencies] = useState({} as Currencies);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/v1/currencies/").then(async (resp) => {
+      if (!resp.ok) throw new Error("Failed to fetch currencies");
+      const data: CurrenciesResponse = await resp.json();
+      const currs: { [key: string]: number } = {};
+      for (const curr of data.currencies) {
+        currs[curr.code] = Number(curr.equals_usd);
+      }
+      setCurrencies(currs);
+      setIsLoading(false);
+    });
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="vh-100 wh-100 d-flex justify-content-center align-items-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div className="container mt-3" style={{maxWidth: 500}}>
+        <Cards currencies={currencies}/>
+      </div>
+    );
+  }
+}

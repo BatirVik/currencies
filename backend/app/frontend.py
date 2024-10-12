@@ -4,11 +4,10 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-router = APIRouter()
-
-
 DIST_PATH = Path(__file__).parent.parent.parent / "frontend" / "dist"
-router.mount("/static", StaticFiles(directory=DIST_PATH))
+
+router = APIRouter()
+router.mount("/static", StaticFiles(directory=str(DIST_PATH)), name="static")
 
 
 @router.get("/")

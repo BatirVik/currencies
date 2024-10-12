@@ -21,7 +21,17 @@ Available values: **production** (.env), **development** (.env.dev), **test** (.
 > JWT token lifetime, by default "15"
 
 ## Testing
-To run tests:
+Run a postgresql docker
+```bash
+docker run -d -p 5100:5432 -e POSTGRES_DB=test -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test postgres
+```
+Create the configuration/**.env.test** file
+```env
+DB_URL="postgresql+psycopg://test:test@localhost:5100/test"
+SECRET_KEY= # openssl rand --hex 32
+LOGS_PATH="logs/logs.test.txt"
+```
+Run pytest (ENV will be overridden to 'test' even if it was exported with a different value)
 ```bash
 poetry run pytest
 ```

@@ -1,48 +1,58 @@
 import Card from "./Card";
-import { v4 as uuidv4 } from "uuid";
-import { useImmer } from "use-immer";
-import { useState } from "react";
-import { useEffect } from "react";
+import {v4 as uuidv4} from "uuid";
+import {useImmer} from "use-immer";
+import {useState, FormEvent, ChangeEvent} from "react";
 
-export default function CardList({ currencies }) {
-  const [usdValue, setUsdValue] = useState(1);
+interface Props {
+  currencies: { [key: string]: number }
+}
+
+export default function CardList({currencies}: Props) {
+  const [usdValue, setUsdValue] = useState(1 as number | null);
   if (isNaN(Number(currencies["USD"]))) {
     throw new Error("Currencies must have at least a number value for 'USD'");
   }
   const [cardCurrencies, setCardCurrencies] = useImmer([
-    { id: uuidv4(), code: "USD", value: usdValue },
+    {id: uuidv4(), code: "USD", value: String(usdValue)},
   ]);
 
-  function handleValueChange(currencyId, event) {
+  function handleValueChange(currencyId: string, event: FormEvent<HTMLInputElement>): void {
     setCardCurrencies((draft) => {
-      const curr = draft.find((curr) => curr.id === currencyId);
-      curr.value = event.target.value;
-      if (curr.value === "") {
+      const card = draft.find((card) => card.id === currencyId);
+      if (card === undefined) {
+        throw new Error("Currency " + currencyId + " not found!")
+      }
+      if (event.currentTarget.value === "") {
         setUsdValue(null);
       } else {
-        setUsdValue(calculateUsdValueFrom(curr.code, curr.value));
+        setUsdValue(
+          calculateUsdValueFrom(card.code, Number(card.value))
+        );
       }
     });
   }
 
-  function handleCodeChange(currencyId, event) {
+  function handleCodeChange(currencyId: string, event: ChangeEvent<HTMLSelectElement>): void {
     setCardCurrencies((draft) => {
-      const curr = draft.find((curr) => curr.id === currencyId);
-      curr.code = event.target.value;
+      const card = draft.find((card) => card.id === currencyId);
+      if (card === undefined) {
+        throw new Error("Currency " + currencyId + " not found!")
+      }
+      card.code = event.target.value;
     });
   }
 
-  function handleRemove(currencyId) {
+  function handleRemove(currencyId: string): void {
     setCardCurrencies(cardCurrencies.filter((curr) => curr.id !== currencyId));
   }
 
-  function handleAdd() {
+  function handleAdd(): void {
     setCardCurrencies((draft) => {
-      draft.push({ id: uuidv4(), code: "USD", value: usdValue });
+      draft.push({id: uuidv4(), code: "USD", value: String(usdValue)});
     });
   }
 
-  function roundValue(num) {
+  function roundValue(num: number): number {
     if (
       num.toString().includes(".") &&
       num.toString().split(".")[1].length > 2
@@ -52,13 +62,13 @@ export default function CardList({ currencies }) {
     return num;
   }
 
-  function calculateValue(code) {
+  function calculateValue(code: string): string {
     if (usdValue === null) return "";
     const equals_usd = currencies[code];
-    return roundValue(usdValue / equals_usd);
+    return String(roundValue(usdValue / equals_usd));
   }
 
-  function calculateUsdValueFrom(code, value) {
+  function calculateUsdValueFrom(code: string, value: number): number {
     const equals_usd = currencies[code];
     return value * equals_usd;
   }
@@ -84,7 +94,7 @@ export default function CardList({ currencies }) {
       {cardsListItems}
       <div className="col d-flex justify-content-center">
         <button className="btn border" onClick={handleAdd}>
-          <i className="bi bi-plus text-secondary" />
+          <i className="bi bi-plus text-secondary"/>
         </button>
       </div>
     </div>

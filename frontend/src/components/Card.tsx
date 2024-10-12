@@ -1,11 +1,17 @@
-export default function Card({
-  code,
-  onCodeChange,
-  value,
-  onValueChange,
-  onRemove,
-  availableCodes,
-}) {
+import {ChangeEventHandler, FormEventHandler, MouseEventHandler} from "react";
+
+interface Props {
+  code: string,
+  onCodeChange: ChangeEventHandler<HTMLSelectElement>,
+  value: string,
+  onValueChange: FormEventHandler<HTMLInputElement>,
+  onRemove: MouseEventHandler,
+  availableCodes: string[]
+}
+
+export default function Card(
+  {code, onCodeChange, value, onValueChange, onRemove, availableCodes}: Props
+) {
   return (
     <div className="d-flex p-1 border gap-1 rounded flex">
       <select
@@ -24,7 +30,7 @@ export default function Card({
         value={value}
       />
       <button className="btn border text-secondary" onClick={onRemove}>
-        <i className="bi-x bi" />
+        <i className="bi-x bi"/>
       </button>
     </div>
   );
