@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -35,7 +36,9 @@ async def test_not_admin_register_admin(db: AsyncSession, client: TestClient):
         json={"email": "user@gmail.com", "password": "12kj4H!090"},
     )
     assert resp.status_code == 403
-    user = await crud.user.read_by_email(db, "user@gmail.com")
+
+    stmt = select(User).where(User.email == "user@gmail.com").limit(1)
+    user = await db.scalar(stmt)
     assert user is None
 
 

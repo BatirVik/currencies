@@ -1,3 +1,6 @@
+from typing import NamedTuple
+from uuid import UUID
+
 from faker import Faker
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from starlette.testclient import TestClient
@@ -16,13 +19,19 @@ def auth_client(client: TestClient, email: str, password: str):
     client.headers["Authorization"] = f"Bearer {token}"
 
 
-async def generate_user(db: AsyncSession, is_admin: bool = False) -> UserCreate:
+class UserData(NamedTuple):
+    id: UUID
+    email: str
+    password: str
+
+
+async def generate_user(db: AsyncSession, is_admin: bool = False) -> UserData:
     user_scheme = UserCreate(
         email=generate_email(),
         password="BestPasswordEver!123#",
     )
-    await crud.user.create(db, user_scheme, is_admin)
-    return user_scheme
+    user = await crud.user.create(db, user_scheme, is_admin)
+    return UserData(id=user.id, email=user_scheme.email, password=user_scheme.password)
 
 
 def generate_email() -> str:
