@@ -5,6 +5,9 @@ description = ""
 authors = ["batir <batir.vik@gmail.com>"]
 readme = "README.md"
 
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = "^0.114.0"
