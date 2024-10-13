@@ -4,12 +4,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import sql, func
 
+from app.exceptions.currency import CurrencyNotFound
 from app.models.currency import Currency
 from app.schemes.currency import CurrenciesList
 
 
-async def read(db: AsyncSession, code: str) -> Currency | None:
-    return await db.get(Currency, code.upper())
+async def read(db: AsyncSession, code: str) -> Currency:
+    if curr := await db.get(Currency, code.upper()):
+        return curr
+    raise CurrencyNotFound(code)
 
 
 async def read_all_codes(db: AsyncSession) -> list[str]:
@@ -20,11 +23,12 @@ async def read_all(db: AsyncSession) -> list[Currency]:
     return list(await db.scalars(sql.select(Currency)))
 
 
-async def delete(db: AsyncSession, code: str) -> bool:
+async def delete(db: AsyncSession, code: str) -> None:
     stmt = sql.delete(Currency).where(Currency.code == code)
     res = await db.execute(stmt)
     await db.commit()
-    return res.rowcount == 1
+    if res.rowcount == 0:
+        raise CurrencyNotFound(code)
 
 
 class CreateManyResult(NamedTuple):
@@ -33,7 +37,7 @@ class CreateManyResult(NamedTuple):
 
 
 async def create_many(
-    db: AsyncSession, currencies_scheme: CurrenciesList
+        db: AsyncSession, currencies_scheme: CurrenciesList
 ) -> CreateManyResult:
     codes = (curr.code for curr in currencies_scheme.currencies)
     curr_values = [curr.model_dump() for curr in currencies_scheme.currencies]
@@ -55,7 +59,7 @@ class UpdateManyResult(NamedTuple):
 
 
 async def update_many(
-    db: AsyncSession, currencies_scheme: CurrenciesList
+        db: AsyncSession, currencies_scheme: CurrenciesList
 ) -> UpdateManyResult:
     codes = {curr.code for curr in currencies_scheme.currencies}
     stmt = sql.select(Currency.code).where(Currency.code.in_(codes)).with_for_update()
@@ -80,7 +84,7 @@ class UpsertManyResult(NamedTuple):
 
 
 async def upsert_many(
-    db: AsyncSession, currencies_scheme: CurrenciesList
+        db: AsyncSession, currencies_scheme: CurrenciesList
 ) -> UpsertManyResult:
     curr_values = [curr.model_dump() for curr in currencies_scheme.currencies]
     stmt = postgresql.insert(Currency).values(curr_values)

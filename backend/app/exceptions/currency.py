@@ -1,0 +1,2 @@
+class CurrencyNotFound(Exception):
+    pass

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.testclient import TestClient
 
 from app import crud
+from app.models.user import User
 from tests.utils import auth_client, generate_user
 
 
@@ -11,7 +12,7 @@ async def test_get_user(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db, is_admin=True)
     auth_client(client, user_data.email, user_data.password)
 
-    user = await crud.user.read_one_by_email(db, user_data.email)
+    user = await db.get_one(User, user_data.id)
 
     resp = client.get(f"/v1/users/{user.id}")
     assert resp.status_code == 200
@@ -28,7 +29,7 @@ async def test_not_admin_get_user(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db)
     auth_client(client, user_data.email, user_data.password)
 
-    user = await crud.user.read_one_by_email(db, user_data.email)
+    user = await db.get_one(User, user_data.id)
 
     resp = client.get(f"/v1/users/{user.id}")
     assert resp.status_code == 403

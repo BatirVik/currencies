@@ -22,7 +22,8 @@ async def create(
     db.add(user)
     try:
         await db.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
+        logger.debug("Catched: {!r}", exc)
         await db.rollback()
         raise EmailAlreadyTaken(user.email)
     return user
@@ -69,12 +70,6 @@ async def update(db: AsyncSession, user_id: UUID, user_scheme: UserUpdate) -> Us
 
     await db.commit()
     return user
-
-
-async def read_one_by_email(db: AsyncSession, user_email: str) -> User:
-    stmt = sql.select(User).where(User.email == user_email)
-    res = await db.execute(stmt)
-    return res.scalar_one()
 
 
 async def reset_password(db: AsyncSession, user: User, reset_scheme: UserResetPassword) -> None:

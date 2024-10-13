@@ -28,18 +28,5 @@ class CurrenciesList(BaseModel):
         return currs
 
 
-class CurrenciesUpsertResp(BaseModel):
-    updated_codes: list[str]
-    created_codes: list[str]
-
-
-class CurrenciesUpdateResp(BaseModel):
-    updated_codes: list[str]
-
-
-class CurrenciesCreateResp(BaseModel):
-    created_codes: list[str]
-
-
-class CurrencyCodesList(BaseModel):
-    codes: list[str]
+class CurrenciesRead(BaseModel):
+    currencies: list[CurrencyRead]

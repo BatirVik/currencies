@@ -7,7 +7,7 @@ class Token(BaseModel):
 
 
 class TokenData[T: str | None](BaseModel):
-    username: T = None
+    username: T
 
     @property
     def email(self) -> T:
