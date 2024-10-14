@@ -20,7 +20,7 @@ ENV=production ENV_FILE=./configuration/.env docker-compose up --build
 ```
 Register the first admin user manually inside the backend docker.
 ```bash
-poetry run python manage.py create
+poetry run python manage.py create-admin "admin" "admin"
 ```
 
 ## Environment variables
