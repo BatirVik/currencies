@@ -34,7 +34,7 @@ async def test_upsert_currencies(db: AsyncSession, client: TestClient):
 
 
 @pytest.mark.asyncio
-async def test_not_admin_upsert_currencies(db: AsyncSession, client: TestClient):
+async def test_upsert_currencies__unauthorized(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db)
     auth_client(client, user_data.email, user_data.password)
 

@@ -21,7 +21,7 @@ async def test_remove_currency(db: AsyncSession, client: TestClient):
 
 
 @pytest.mark.asyncio
-async def test_remove_currency_not_admin(db: AsyncSession, client: TestClient):
+async def test_remove_currency__forbidden(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db)
     auth_client(client, user_data.email, user_data.password)
 

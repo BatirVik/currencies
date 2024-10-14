@@ -1,14 +1,19 @@
 from typing import Annotated
 from fastapi import HTTPException, APIRouter, Path
 
-from app.auth import admin_depends
+from app.auth import admin_depends, user_depends
 from app.db import SessionDepends
 from app.exceptions.currency import CurrencyNotFound
 from app.schemes.currency import CurrenciesList, CurrencyRead, CurrenciesRead
 from app import crud
 from app.models.currency import Currency
 
-router = APIRouter(prefix="/currencies", tags=["currencies"])
+router = APIRouter(
+    prefix="/currencies",
+    tags=["currencies"],
+    dependencies=[user_depends],
+    responses={401: {"description": "Unauthorized"}},
+)
 
 
 @router.get(
@@ -20,19 +25,14 @@ router = APIRouter(prefix="/currencies", tags=["currencies"])
                 "application/json": {
                     "example": {
                         "currencies": [
-                            {
-                                "code": "EUR",
-                                "equal_usd": "1.0900"
-                            }, {
-                                "code": "USD",
-                                "equal_usd": "1.0000"
-                            }
+                            {"code": "EUR", "equal_usd": "1.0900"},
+                            {"code": "USD", "equal_usd": "1.0000"},
                         ]
                     },
                 }
             }
         },
-    }
+    },
 )
 async def get_all_currencies(db: SessionDepends) -> dict[str, list[Currency]]:
     currs = await crud.currency.read_all(db)
@@ -42,14 +42,8 @@ async def get_all_currencies(db: SessionDepends) -> dict[str, list[Currency]]:
 @router.get(
     "/codes",
     responses={
-        200: {
-            "content": {
-                "application/json": {
-                    "example": {"codes": ["USD", "EUR"]}
-                }
-            }
-        }
-    }
+        200: {"content": {"application/json": {"example": {"codes": ["USD", "EUR"]}}}}
+    },
 )
 async def get_available_currency_codes(db: SessionDepends) -> dict[str, list[str]]:
     codes = await crud.currency.read_all_codes(db)
@@ -63,18 +57,15 @@ async def get_available_currency_codes(db: SessionDepends) -> dict[str, list[str
         200: {
             "content": {
                 "application/json": {
-                    "example": {
-                        "code": "EUR",
-                        "equal_usd": "1.0900"
-                    },
+                    "example": {"code": "EUR", "equal_usd": "1.0900"},
                 }
             }
         },
-        404: {"description": "Not Found"}
-    }
+        404: {"description": "Not Found"},
+    },
 )
 async def get_currency(
-        db: SessionDepends, code: Annotated[str, Path(min_length=3, max_length=3)]
+    db: SessionDepends, code: Annotated[str, Path(min_length=3, max_length=3)]
 ) -> Currency:
     try:
         return await crud.currency.read(db, code)
@@ -87,13 +78,12 @@ async def get_currency(
     status_code=204,
     dependencies=[admin_depends],
     responses={
-        401: {"description": "Unauthorized"},
         403: {"description": "Forbidden"},
-        404: {"description": "Not Found"}
-    }
+        404: {"description": "Not Found"},
+    },
 )
 async def remove_currency(
-        db: SessionDepends, code: Annotated[str, Path(min_length=3, max_length=3)]
+    db: SessionDepends, code: Annotated[str, Path(min_length=3, max_length=3)]
 ) -> None:
     try:
         await crud.currency.delete(db, code)
@@ -115,7 +105,6 @@ async def remove_currency(
                 }
             }
         },
-        401: {"description": "Unauthorized"},
         403: {"description": "Forbidden"},
         409: {
             "description": "Conflict",
@@ -126,12 +115,12 @@ async def remove_currency(
                         "existed_codes": ["USD", "EUR"],
                     },
                 }
-            }
-        }
-    }
+            },
+        },
+    },
 )
 async def add_currencies(
-        db: SessionDepends, currs_scheme: CurrenciesList
+    db: SessionDepends, currs_scheme: CurrenciesList
 ) -> dict[str, list[str]]:
     res = await crud.currency.create_many(db, currs_scheme)
     if not res.existed_codes:
@@ -161,7 +150,6 @@ async def add_currencies(
                 }
             }
         },
-        401: {"description": "Unauthorized"},
         403: {"description": "Forbidden"},
         404: {
             "description": "Conflict",
@@ -172,12 +160,12 @@ async def add_currencies(
                         "not_existed_codes": ["USD", "EUR"],
                     },
                 }
-            }
-        }
-    }
+            },
+        },
+    },
 )
 async def update_currencies(
-        db: SessionDepends, currs_scheme: CurrenciesList
+    db: SessionDepends, currs_scheme: CurrenciesList
 ) -> dict[str, list[str]]:
     res = await crud.currency.update_many(db, currs_scheme)
     if not res.not_existed_codes:
@@ -208,12 +196,11 @@ async def update_currencies(
                 }
             }
         },
-        401: {"description": "Unauthorized"},
         403: {"description": "Forbidden"},
-    }
+    },
 )
 async def upsert_currencies(
-        db: SessionDepends, currs_scheme: CurrenciesList
+    db: SessionDepends, currs_scheme: CurrenciesList
 ) -> dict[str, list[str]]:
     res = await crud.currency.upsert_many(db, currs_scheme)
     return {

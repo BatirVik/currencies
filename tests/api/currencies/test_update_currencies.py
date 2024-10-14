@@ -32,7 +32,7 @@ async def test_update_currencies(db: AsyncSession, client: TestClient):
 
 
 @pytest.mark.asyncio
-async def test_not_admin_update_currencies(db: AsyncSession, client: TestClient):
+async def test_update_currencies__forbidden(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db)
     auth_client(client, user_data.email, user_data.password)
 
@@ -54,7 +54,7 @@ async def test_not_admin_update_currencies(db: AsyncSession, client: TestClient)
 
 
 @pytest.mark.asyncio
-async def test_update_currencies_not_found(db: AsyncSession, client: TestClient):
+async def test_update_currencies__conflict(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db, is_admin=True)
     auth_client(client, user_data.email, user_data.password)
 
