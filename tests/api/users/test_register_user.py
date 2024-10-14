@@ -22,7 +22,7 @@ async def test_register_user(db: AsyncSession, client: TestClient):
 
 
 @pytest.mark.asyncio
-async def test_register_user_with_taken_email(db: AsyncSession, client: TestClient):
+async def test_register_user__forbidden(db: AsyncSession, client: TestClient):
     await crud.user.create(
         db, UserCreate(email="user@gmail.com", password="12kj%%%!090")
     )

@@ -2,7 +2,6 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.testclient import TestClient
 
-from app import crud
 from app.auth import authenticate_user
 from app.models.user import User
 
@@ -38,7 +37,7 @@ async def test_update_user(db: AsyncSession, client: TestClient):
 
 
 @pytest.mark.asyncio
-async def test_update_user_with_taken_email(db: AsyncSession, client: TestClient):
+async def test_update_user__conflict(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db, is_admin=True)
     auth_client(client, user_data.email, user_data.password)
 
@@ -54,7 +53,7 @@ async def test_update_user_with_taken_email(db: AsyncSession, client: TestClient
 
 
 @pytest.mark.asyncio
-async def test_not_admin_update_user(db: AsyncSession, client: TestClient):
+async def test_update_user__forbidden(db: AsyncSession, client: TestClient):
     user_data = await generate_user(db)
     auth_client(client, user_data.email, user_data.password)
 

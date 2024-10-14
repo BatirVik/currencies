@@ -14,3 +14,9 @@ async def test_get_current_user(db: AsyncSession, client: TestClient):
     resp_data = resp.json()
     assert resp_data.keys() == {"id", "is_admin", "email"}
     assert resp_data["email"] == user_data.email
+
+
+@pytest.mark.asyncio
+async def test_get_current_user__unauthorized(client: TestClient):
+    resp = client.get("/v1/users/me")
+    assert resp.status_code == 401
