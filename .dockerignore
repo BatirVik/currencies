@@ -2,6 +2,8 @@ configuration/
 tests/
 logs/
 
+.*
+
 # Ignore Python cache files
 __pycache__/
 *.pyc
@@ -34,4 +36,3 @@ coverage/
 
 # Ignore logs and temporary files
 logs/*
-

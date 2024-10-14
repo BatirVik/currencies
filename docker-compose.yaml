@@ -1,18 +1,20 @@
 services:
   backend:
-    build: ./backend
+    build: .
     container_name: currency-convertor-backend
     restart: always
     working_dir: /app
     command: ash -c "poetry run alembic upgrade head && poetry run uvicorn app.main:app --host 0.0.0.0 --reload --port 8000"
     ports:
       - "8000:8000"
+    environment:
+      - ENV=${ENV}
     env_file:
-      - ./configuration/.env.backend
+      - ${ENV_FILE}
     depends_on:
       - db
     volumes:
-      - ./backend:/app
+      - ./:/app
   db:
     image: postgres:16-alpine
     container_name: currency-convertor-postgres
