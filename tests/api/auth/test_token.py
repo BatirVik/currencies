@@ -21,7 +21,7 @@ async def test_get_token(db: AsyncSession, client: TestClient):
 
 
 @pytest.mark.asyncio
-async def test_get_token_with_invalid_password(db: AsyncSession, client: TestClient):
+async def test_get_token__invalid_password(db: AsyncSession, client: TestClient):
     user = await crud.user.create(
         db, UserCreate(email="user@gmail.com", password="123%0=Hello")
     )
