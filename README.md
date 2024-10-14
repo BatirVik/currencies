@@ -1,4 +1,4 @@
-# Currency
+# Currencies
 The backend API service for storing and managing currencies.
 
 ## Quick start
