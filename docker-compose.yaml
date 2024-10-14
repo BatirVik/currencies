@@ -1,27 +1,27 @@
 services:
-    backend:
-        build: ./backend
-        container_name: currency-convertor-backend
-        restart: always
-        working_dir: /app
-        command: ash -c "poetry run alembic upgrade head && poetry run uvicorn app.main:app --host 0.0.0.0 --port --reload 8000"
-        ports:
-            - 8000:8000
-        env_file:
-            - ./configuration/.env.backend
-        depends_on:
-            - db
-        volumes:
-            - ./backend:/app
-    db:
-        image: postgres:16-alpine
-        container_name: currency-convertor-postgres
-        env_file:
-            - ./configuration/.env.db
-        ports:
-            - 5432:5432
-        volumes:
-            - postgres_data:/var/lib/postgresql/data:cached
+  backend:
+    build: ./backend
+    container_name: currency-convertor-backend
+    restart: always
+    working_dir: /app
+    command: ash -c "poetry run alembic upgrade head && poetry run uvicorn app.main:app --host 0.0.0.0 --reload --port 8000"
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./configuration/.env.backend
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+  db:
+    image: postgres:16-alpine
+    container_name: currency-convertor-postgres
+    env_file:
+      - ./configuration/.env.db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:cached
 volumes:
-    postgres_data:
-        driver: local
+  postgres_data:
+    driver: local

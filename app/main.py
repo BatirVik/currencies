@@ -13,12 +13,3 @@ app.include_router(api.v1.router)
 
 logger.remove(0)  # remove default logger
 app.middleware("http")(logger_middleware)
-
-DIST_PATH = Path(__file__).parent.parent / "static"
-
-app.mount("/static", StaticFiles(directory=str(DIST_PATH)), name="static")
-
-
-@app.get("/")
-async def index_page():
-    return FileResponse(DIST_PATH / "index.html", media_type="text/html")
