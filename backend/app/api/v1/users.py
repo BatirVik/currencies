@@ -34,6 +34,8 @@ async def register_user(db: SessionDepends, user_scheme: UserCreate) -> User:
     response_model=UserRead,
     dependencies=[admin_depends],
     responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
         409: {"description": "Email Already Taken"}
     }
 )
@@ -44,7 +46,13 @@ async def register_admin(db: SessionDepends, user_scheme: UserCreate) -> User:
         raise HTTPException(409, "Email is already taken")
 
 
-@router.get("/me", response_model=UserRead)
+@router.get(
+    "/me",
+    response_model=UserRead,
+    responses={
+        401: {"description": "Unauthorized"},
+    }
+)
 async def get_current_user(user: UserDepends) -> User:
     return user
 
@@ -54,6 +62,8 @@ async def get_current_user(user: UserDepends) -> User:
     response_model=UserRead,
     dependencies=[admin_depends],
     responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
         404: {"description": "Not found"}
     }
 )
@@ -69,6 +79,8 @@ async def get_user_by_id(db: SessionDepends, user_id: UUID) -> User:
     status_code=204,
     dependencies=[admin_depends],
     responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
         404: {"description": "Not found"}
     }
 )
@@ -84,6 +96,8 @@ async def remove_user_by_id(db: SessionDepends, user_id: UUID) -> None:
     dependencies=[admin_depends],
     response_model=UserRead,
     responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
         404: {"description": "Not found"},
         409: {"description": "Email Already Taken"}
     }
@@ -103,6 +117,7 @@ async def update_user_by_id(
     "/me/reset-password",
     status_code=204,
     responses={
+        401: {"description": "Unauthorized"},
         400: {"description": "Authentication Failed"},
     }
 )

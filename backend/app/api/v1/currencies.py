@@ -11,7 +11,29 @@ from app.models.currency import Currency
 router = APIRouter(prefix="/currencies", tags=["currencies"])
 
 
-@router.get("/", response_model=CurrenciesRead)
+@router.get(
+    "/",
+    response_model=CurrenciesRead,
+    responses={
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "currencies": [
+                            {
+                                "code": "EUR",
+                                "equal_usd": "1.0900"
+                            }, {
+                                "code": "USD",
+                                "equal_usd": "1.0000"
+                            }
+                        ]
+                    },
+                }
+            }
+        },
+    }
+)
 async def get_all_currencies(db: SessionDepends) -> dict[str, list[Currency]]:
     currs = await crud.currency.read_all(db)
     return {"currencies": currs}
@@ -38,6 +60,16 @@ async def get_available_currency_codes(db: SessionDepends) -> dict[str, list[str
     "/{code}",
     response_model=CurrencyRead,
     responses={
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "code": "EUR",
+                        "equal_usd": "1.0900"
+                    },
+                }
+            }
+        },
         404: {"description": "Not Found"}
     }
 )
@@ -55,6 +87,8 @@ async def get_currency(
     status_code=204,
     dependencies=[admin_depends],
     responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
         404: {"description": "Not Found"}
     }
 )
@@ -81,6 +115,8 @@ async def remove_currency(
                 }
             }
         },
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
         409: {
             "description": "Conflict",
             "content": {
@@ -125,6 +161,8 @@ async def add_currencies(
                 }
             }
         },
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
         404: {
             "description": "Conflict",
             "content": {
@@ -170,6 +208,8 @@ async def update_currencies(
                 }
             }
         },
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
     }
 )
 async def upsert_currencies(

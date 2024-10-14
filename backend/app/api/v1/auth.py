@@ -16,7 +16,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post(
     "/token",
-    responses={401: {"description": "Authentication Failed"}}
+    responses={401: {"description": "Unauthorized"}}
 )
 async def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: SessionDepends
