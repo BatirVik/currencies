@@ -55,6 +55,10 @@ DB_URL="postgresql+psycopg://test:test@localhost:5100/test"
 SECRET_KEY= # openssl rand --hex 32
 LOGS_PATH="logs/logs.test.txt"
 ```
+Install all dependencies:
+```bash
+poetry install --no-root
+```
 Run pytest: (The ENV variable will be set to 'test' even if another value was previously exported)
 ```bash
 poetry run pytest
@@ -81,15 +85,15 @@ Activate the virtual environment and set the ENV:
 poetry shell
 export ENV=development
 ```
-**Create user**
+**Create user**:
 ```bash
 python manage.py create-user "email" "password"
 ```
-**Create admin**
+**Create admin**:
 ```bash
 python manage.py create-admin "email" "password"
 ```
-**Load mock currencies**
+**Load mock currencies**:
 ```bash
 python manage.py create-mock-currs
 ```
