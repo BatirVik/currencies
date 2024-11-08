@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from jwt.exceptions import InvalidTokenError
 import jwt
 
+from app.exceptions.user import UserNotFound
 from app.config import config
 from app import crud
 from app.models.user import User
@@ -26,9 +27,12 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
-    if user := await crud.user.read_by_email(db, email):
+    try:
+        user = await crud.user.read_by_email(db, email)
         if verify_password(password, user.hashed_password):
             return user
+    except UserNotFound:
+        return None
 
 
 def create_access_token(payload: dict[str, Any], expires_delta: timedelta) -> str:
